@@ -2,9 +2,9 @@
 
 | Nguồn / yêu cầu | Control đã làm | Evidence file:dòng | Giới hạn |
 |---|---|---|---|
-| Luật 91/2025/QH15 | | | |
-| NĐ 356/2025/NĐ-CP | | | |
-| Luật AI 134/2025/QH15 | | | |
-| OWASP ASI01, ASI03, ASI04 | | | |
+| **Luật 91/2025/QH15** (Luật Dữ liệu) | Phân loại dữ liệu (`internal`, `restricted`, `public`); kiểm soát truy cập dữ liệu cá nhân theo vai trò; thiết lập nhật ký kiểm toán toàn vẹn (tamper-evident hash chain). | `agent/policy.py:15-33` (phân loại PolicyContext); `agent/policy.py:64-70` (cấm egress restricted); `agent/ledger.py:20-53` (append hash chain). | Mô phỏng trên file JSON/JSONL cục bộ, chưa tích hợp KMS/HSM hoặc mã hóa tại chỗ (at-rest encryption). Các điều khoản chi tiết: *chưa xác minh* văn bản gốc. |
+| **NĐ 356/2025/NĐ-CP** (Quy định chi tiết thi hành Luật Dữ liệu & bảo vệ DLCN) | Bảo vệ dữ liệu cá nhân nhạy cảm: lọc và làm mờ (redaction) CCCD, SĐT, STK, Email trước khi chia sẻ; chặn rò rỉ dữ liệu qua kênh mạng bên ngoài. | `agent/pii.py:34-80` (hàm `detect`); `agent/pii.py:83-93` (hàm `redact`); `agent/runner.py:129-166` (PEP chặn `http_post`). | Bộ lọc PII dựa trên quy tắc Regex trên tập synthetic; chưa có kiểm định pháp lý hoặc xử lý ngữ cảnh tiếng Việt tự nhiên phức tạp. Các điều khoản chi tiết: *chưa xác minh* văn bản gốc. |
+| **Luật AI 134/2025/QH15** (Luật CN Công nghệ số / Trí tuệ nhân tạo) | Kiểm soát rủi ro hệ thống AI tự chủ; uỷ quyền hành động thay người dùng (On-Behalf-Of); giới hạn quyền tối thiểu (least privilege); lưu vết giải trình (explainability với 100% reason non-empty). | `agent/policy.py:72-126` (kiểm tra principal, scope, purpose, expiry); `agent/runner.py:46-126` (kiểm tra trước khi gọi tool); `agent/ledger.py:56-104` (verify tính toàn vẹn và reason). | Danh tính principal và TTL là mô phỏng nội bộ (`data/principals.json`), không phải hệ thống xác thực OAuth2/IAM production. Các điều khoản chi tiết: *chưa xác minh* văn bản gốc. |
+| **OWASP ASI01, ASI03, ASI04** (Top 10 Agentic AI Risks) | **ASI01** (Agent Goal Hijack): Trifecta split chặn chỉ thị injection trong free text.<br>**ASI03** (Insecure Tool Execution): PEP chặn tool trái phép trước khi gọi.<br>**ASI04** (Excessive Agency / Egress): Chặn egress cho restricted data; delegation scope limitation. | `agent/runner.py:73-108` (Run A -> Run B split chỉ truyền typed ID); `agent/policy.py:54-126` (PEP gating); `reports/ledger.jsonl:1-23` (bằng chứng deny egress). | Kiểm thử với MockLLM deterministic; các mô hình LLM lớn ngoài đời có thể xuất hiện các kỹ thuật bypass tokenization/jailbreak mới. |
 
 Chỉ ghi điều khoản cụ thể khi đã đối chiếu văn bản gốc. Mô phỏng kỹ thuật không tự chứng minh tuân thủ pháp luật.
